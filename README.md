@@ -2,6 +2,12 @@
 
 This dockerfile builds an alpine image containing the requirements for running the aws-cdk command line tool.
 
+Pull latest image
+
+```
+docker pull pkumaschow/cdk
+```
+
 Create a bash alias n your .bashrc file to transparently call the image from your bash terminal.
 
 ```
