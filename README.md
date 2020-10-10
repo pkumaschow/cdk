@@ -2,7 +2,7 @@
 
 This dockerfile builds an alpine image containing the requirements for running the aws-cdk command line tool.
 
-Pull latest image
+Pull latest image from docker hub
 
 ```
 docker pull pkumaschow/cdk
