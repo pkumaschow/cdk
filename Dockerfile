@@ -3,13 +3,6 @@ FROM alpine:3.12
 #FOR NODE
 ENV NODE_VERSION 14.13.1
 
-#FOR PYTHON
-ENV PATH /usr/local/bin:$PATH
-ENV LANG C.UTF-8
-RUN apk add --no-cache ca-certificates
-ENV GPG_KEY E3FF2839C048B25C084DEBE9B26995E310250568
-ENV PYTHON_VERSION 3.9.0
-
 #BUILD NODE
 RUN addgroup -g 1000 node \
     && adduser -u 1000 -G node -s /bin/sh -D node \
@@ -103,20 +96,9 @@ RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar \
   # smoke test
   && yarn --version
 
-#COPY docker-entrypoint.sh /usr/local/bin/
-#ENTRYPOINT ["docker-entrypoint.sh"]
-#CMD [ "node" ]
-
 RUN npm i -g aws-cdk
 
-#RUN python3 -m ensurepip --upgrade
-#RUN python3 -m pip install --upgrade pip
-#RUN python3 -m pip install --upgrade virtualenv
-#RUN python -m pip install aws-cdk.aws-s3 aws-cdk.aws-lambda
-
 WORKDIR /src
-
-#CMD ["python3"]
 
 ENTRYPOINT ["/usr/local/bin/cdk"]
 
