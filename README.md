@@ -15,7 +15,7 @@ docker pull pkumaschow/cdk
 Create a bash alias n your .bashrc file to transparently call the image from your bash terminal.
 
 ```
-alias cdk='project_name=${PWD##*/};docker run --rm -u "$(id -u):$(id -g)" -w /$project_name -v `pwd`/:/$project_name pkumaschow/cdk'
+project_name=${PWD##*/};docker run --rm -u "$(id -u):$(id -g)" -w /$project_name -v `pwd`/:/$project_name -v ~/.aws:/home/node/.aws pkumaschow/cdk
 ```
 
 cdk uses the name of the current directory to name various elements of the project, including classes, subfolders and files.
