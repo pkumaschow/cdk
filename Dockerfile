@@ -227,7 +227,11 @@ RUN npm i -g aws-cdk
 RUN python3 -m ensurepip --upgrade
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade virtualenv
-RUN python -m pip install aws-cdk.aws-s3 aws-cdk.aws-lambda
+RUN python -m pip install aws-cdk.aws-s3 aws-cdk.aws-lambda awscli
+
+RUN apk add --no-cache git
+
+RUN rm -rf /var/cache/apk/*
 
 # Default working directory 
 WORKDIR /src
