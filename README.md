@@ -31,3 +31,14 @@ cdk init app --language python
 ```
 Exactly as documented here: https://docs.aws.amazon.com/cdk/latest/guide/work-with-cdk-python.html
 
+Example Run:
+
+```
+mkdir sample-app
+cd sample-app
+cdk init sample-app --language python
+cdk deploy --require-approval never sample-app
+cdk destroy -f sample-app
+```
+
+
