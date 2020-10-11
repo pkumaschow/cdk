@@ -2,6 +2,10 @@
 
 This dockerfile builds an alpine image containing the requirements for running the aws-cdk command line tool.
 
+Python 3.9 is included in the container.
+
+Note: this needs more work before it can be useful.
+
 Pull latest image from docker hub
 
 ```
