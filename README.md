@@ -6,6 +6,8 @@ Python 3.7.9 is built into the container so only python can be used as a languag
 
 Note: this needs more work before it can be useful.
 
+Enough of the aws-cdk pip modules have been included in the image to synthesise the sample-app.
+
 Pull latest image from docker hub
 
 ```
