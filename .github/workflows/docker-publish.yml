@@ -6,7 +6,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Publish to Registry
-      uses: elgohr/Publish-Docker-Github-Action@8e555d3d730d42d274a0435e12f3ef9971ea07c9
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: pkumaschow/cdk
         username: ${{ secrets.DOCKERHUB_USERNAME }}
