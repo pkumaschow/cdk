@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2026-04-01] - `pkumaschow/cdk:latest`
 
 ### Changed
 - Base image updated from `alpine:3.12` + manual Node/Python builds to `node:22-alpine`
