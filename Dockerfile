@@ -7,7 +7,8 @@ RUN apk upgrade --no-cache
 RUN apk add --no-cache python3 py3-pip git
 
 # Update npm to latest (fixes CVE-2026-23745/23950/24842/26960/29786/31802 in bundled node-tar)
-RUN npm install -g npm@latest
+# --ignore-scripts avoids module conflict when npm replaces itself during upgrade (npm is pure JS, safe)
+RUN npm install -g npm@latest --ignore-scripts
 
 # Install AWS CDK v2 CLI
 RUN npm install -g aws-cdk
