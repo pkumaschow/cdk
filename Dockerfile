@@ -10,6 +10,7 @@ RUN apk add --no-cache python3 py3-pip git
 # so no npm install step is needed. This avoids the npm@10→npm@11 self-upgrade circular failure on Alpine.
 # Extract to temp dir first, then clean-swap to avoid stale npm@10 files breaking npm@11.
 RUN NPM_VERSION=$(npm view npm version) && \
+    mkdir -p /tmp/npm-latest && \
     wget -qO- "https://registry.npmjs.org/npm/-/npm-${NPM_VERSION}.tgz" | \
     tar xz -C /tmp/npm-latest --strip-components=1 && \
     rm -rf /usr/local/lib/node_modules/npm && \
