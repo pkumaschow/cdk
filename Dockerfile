@@ -1,4 +1,7 @@
-FROM node:22-alpine3.21
+FROM node:22-alpine
+
+# Upgrade all OS packages to pick up latest security patches (fixes OpenSSL CVEs)
+RUN apk upgrade --no-cache
 
 # Install Python 3, pip, and git
 RUN apk add --no-cache python3 py3-pip git
