@@ -24,6 +24,8 @@
 - **CVE-2026-26960** (HIGH) — node-tar: Arbitrary file read/write via malicious archive hardlink creation; fixed by `npm@latest` (bundles tar ≥ 7.5.8)
 - **CVE-2026-29786** (HIGH) — node-tar: Hardlink path traversal via drive-relative linkpath; fixed by `npm@latest` (bundles tar ≥ 7.5.10)
 - **CVE-2026-31802** (HIGH) — node-tar: File overwrite via drive-relative symlink traversal; fixed by `npm@latest` (bundles tar ≥ 7.5.11)
+- **CVE-2026-33671** (HIGH) — picomatch: ReDoS via extglob patterns (`+(a|aa)`, `+(*|?)` etc.); fixed by patching all nested picomatch instances (including aws-cdk bundled copies) to latest via tarball replacement
+- **CVE-2026-24049** (HIGH) — wheel/setuptools: Path traversal in `wheel.cli.unpack` — chmod applies unsanitized archive filename allowing permission modification outside extraction directory; fixed by `pip3 install --upgrade wheel setuptools`
 
 ### CI/CD
 - Replaced `elgohr/Publish-Docker-Github-Action` with `docker/build-push-action@v6`

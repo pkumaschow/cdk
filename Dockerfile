@@ -19,11 +19,22 @@ RUN NPM_VERSION=$(npm view npm version) && \
 # Install AWS CDK v2 CLI
 RUN npm install -g aws-cdk
 
+# Fix CVE-2026-33671: patch all picomatch instances to latest (ReDoS via extglob patterns).
+# aws-cdk bundles its own nested copies so npm@11 upgrade alone does not cover them.
+RUN PICO_VERSION=$(npm view picomatch version) && \
+    find /usr/local/lib/node_modules -type d -name picomatch 2>/dev/null | \
+    while read dir; do \
+      wget -qO- "https://registry.npmjs.org/picomatch/-/picomatch-${PICO_VERSION}.tgz" | \
+      tar xz --strip-components=1 -C "$dir"; \
+    done
+
 # Install CDK v2 Python library and AWS CLI
+# wheel and setuptools upgraded explicitly to fix CVE-2026-24049 (path traversal in wheel.cli.unpack)
 RUN pip3 install --no-cache-dir --break-system-packages \
     aws-cdk-lib \
     constructs \
-    awscli
+    awscli && \
+    pip3 install --no-cache-dir --break-system-packages --upgrade wheel setuptools
 
 RUN rm -rf /var/cache/apk/*
 
