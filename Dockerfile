@@ -6,11 +6,11 @@ RUN apk upgrade --no-cache
 # Install Python 3, pip, and git
 RUN apk add --no-cache python3 py3-pip git
 
-# Update npm to latest (fixes CVE-2026-23745/23950/24842/26960/29786/31802 in bundled node-tar)
-# --ignore-scripts avoids module conflict when npm replaces itself during upgrade (npm is pure JS, safe)
-# RUN npm install -g npm@latest --ignore-scripts
-# Update npm to latest (fixes CVE-2026-23745/23950/24842/26960/29786/31802 in bundled node-tar)
-RUN npm install -g npm@latest --force
+# Update npm to latest by extracting tarball directly — npm publishes with all bundled deps included,
+# so no npm install step is needed. This avoids the npm@10→npm@11 self-upgrade circular failure on Alpine.
+RUN NPM_VERSION=$(npm view npm version) && \
+    wget -qO- "https://registry.npmjs.org/npm/-/npm-${NPM_VERSION}.tgz" | \
+    tar xz -C /usr/local/lib/node_modules/npm --strip-components=1
 
 # Install AWS CDK v2 CLI
 RUN npm install -g aws-cdk
