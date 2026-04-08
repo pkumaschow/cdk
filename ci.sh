@@ -1,10 +1,15 @@
 #!/bin/bash
 set -e
 
-echo "Building cdk alpine docker image"
+RUNTIME=docker
+if [ "${1}" = "podman" ]; then
+  RUNTIME=podman
+fi
 
-if [ -z ${CI}]; then
-  docker build -t cdk:latest .
+echo "Building cdk alpine ${RUNTIME} image"
+
+if [ -z ${CI} ]; then
+  ${RUNTIME} build -t cdk:latest .
 else
-  docker build -t cdk:latest /godata/pipelines/docker-cdk/.
+  ${RUNTIME} build -t cdk:latest /godata/pipelines/docker-cdk/.
 fi
