@@ -4,7 +4,7 @@
 
 ### Changed
 - AWS CDK CLI: unpinned → 2.1117.0
-- aws-cdk-lib: unpinned → 2.1117.0
+- aws-cdk-lib: unpinned → 2.246.0
 
 ## [2026-04-01] - `pkumaschow/cdk:latest`
 

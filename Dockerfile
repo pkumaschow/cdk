@@ -31,7 +31,7 @@ RUN PICO_VERSION=$(npm view picomatch version) && \
 # Install CDK v2 Python library and AWS CLI
 # wheel and setuptools upgraded explicitly to fix CVE-2026-24049 (path traversal in wheel.cli.unpack)
 RUN pip3 install --no-cache-dir --break-system-packages \
-    aws-cdk-lib==2.1117.0 \
+    aws-cdk-lib==2.246.0 \
     constructs \
     awscli && \
     pip3 install --no-cache-dir --break-system-packages --upgrade wheel setuptools
