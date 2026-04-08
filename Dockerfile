@@ -17,7 +17,7 @@ RUN NPM_VERSION=$(npm view npm version) && \
     mv /tmp/npm-latest /usr/local/lib/node_modules/npm
 
 # Install AWS CDK v2 CLI
-RUN npm install -g aws-cdk@2.1117.0
+RUN npm install -g aws-cdk@2.1115.1
 
 # Fix CVE-2026-33671: patch all picomatch instances to latest (ReDoS via extglob patterns).
 # aws-cdk bundles its own nested copies so npm@11 upgrade alone does not cover them.
