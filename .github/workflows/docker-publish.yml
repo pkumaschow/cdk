@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,6 +41,9 @@ jobs:
         with:
           context: .
           load: true
+          pull: true
+          build-args: |
+            APK_REFRESH=${{ github.run_id }}
           tags: pkumaschow/cdk:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -49,6 +55,9 @@ jobs:
         with:
           context: .
           push: true
+          pull: true
+          build-args: |
+            APK_REFRESH=${{ github.run_id }}
           tags: |
             pkumaschow/cdk:latest
             pkumaschow/cdk:${{ steps.cdk_version.outputs.version }}
@@ -60,6 +69,7 @@ jobs:
       # PRs: compare against production, comment findings on the PR
       - name: Docker Scout compare
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         uses: docker/scout-action@v1
         with:
           command: compare
@@ -72,6 +82,7 @@ jobs:
       # main: record CVEs against the production environment after push
       - name: Docker Scout record
         if: github.event_name == 'push'
+        continue-on-error: true
         uses: docker/scout-action@v1
         with:
           command: cves

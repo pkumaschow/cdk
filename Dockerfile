@@ -1,5 +1,9 @@
 FROM node:22-alpine
 
+# Cache-bust the apk-upgrade layer so each CI build pulls the latest
+# Alpine security patches (CI passes APK_REFRESH=${{ github.run_id }}).
+ARG APK_REFRESH=daily
+
 # Upgrade all OS packages to pick up latest security patches (fixes OpenSSL CVEs)
 RUN apk upgrade --no-cache
 
@@ -30,10 +34,12 @@ RUN PICO_VERSION=$(npm view picomatch version) && \
 
 # Install CDK v2 Python library and AWS CLI
 # wheel and setuptools upgraded explicitly to fix CVE-2026-24049 (path traversal in wheel.cli.unpack)
+# urllib3>=2.7.0 pinned to fix CVE-2026-44431, CVE-2026-44432 (pulled in as awscli dep)
 RUN pip3 install --no-cache-dir --break-system-packages \
     aws-cdk-lib==2.246.0 \
     constructs \
-    awscli && \
+    awscli \
+    'urllib3>=2.7.0' && \
     pip3 install --no-cache-dir --break-system-packages --upgrade wheel setuptools
 
 RUN rm -rf /var/cache/apk/*
