@@ -40,6 +40,7 @@ scout-cves:
     - job: build-image
       artifacts: true
   variables:
+    GIT_STRATEGY: none
     DOCKER_SCOUT_HUB_USER: "$DOCKERHUB_USER"
     DOCKER_SCOUT_HUB_PASSWORD: "$DOCKERHUB_PAT"
   before_script:
