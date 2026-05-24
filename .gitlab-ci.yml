@@ -51,6 +51,6 @@ scout-cves:
       chmod +x /usr/local/bin/docker-scout
     - docker-scout version
   script:
-    - docker-scout cves "${CI_PROJECT_DIR}/image.tar" --only-severity critical,high --exit-code
+    - docker-scout cves "archive://${CI_PROJECT_DIR}/image.tar" --only-severity critical,high --exit-code
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
