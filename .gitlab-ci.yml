@@ -16,11 +16,14 @@ build-image:
       echo "{\"auths\":{\"${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}"
       > /kaniko/.docker/config.json
   script:
+    - export CDK_VERSION=$(grep -oE 'aws-cdk@[0-9.]+' "${CI_PROJECT_DIR}/Dockerfile" | head -1 | cut -d@ -f2)
+    - echo "Building cdk image at CDK version ${CDK_VERSION}"
     - >
       /kaniko/executor
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
+      --destination "${REGISTRY_IMAGE}:${CDK_VERSION}"
       --destination "${REGISTRY_IMAGE}:latest"
       --build-arg "APK_REFRESH=${CI_PIPELINE_ID}"
       --tar-path "${CI_PROJECT_DIR}/image.tar"
