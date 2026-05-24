@@ -1,5 +1,6 @@
 stages:
   - build
+  - scan
 
 variables:
   REGISTRY_IMAGE: "$CI_REGISTRY_IMAGE"
@@ -24,5 +25,25 @@ build-image:
       --build-arg "APK_REFRESH=${CI_PIPELINE_ID}"
       --insecure
       --skip-tls-verify
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+scout-cves:
+  stage: scan
+  image:
+    name: docker/scout-cli:latest
+    entrypoint: [""]
+  needs:
+    - build-image
+  variables:
+    DOCKER_SCOUT_HUB_USER: "$DOCKERHUB_USER"
+    DOCKER_SCOUT_HUB_PASSWORD: "$DOCKERHUB_PAT"
+  before_script:
+    - mkdir -p ~/.docker
+    - >
+      echo "{\"auths\":{\"${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}"
+      > ~/.docker/config.json
+  script:
+    - docker scout cves "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}" --only-severity critical,high --exit-code
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
