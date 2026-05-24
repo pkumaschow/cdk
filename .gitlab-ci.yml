@@ -41,15 +41,19 @@ scout-cves:
     - |
       SCOUT_TAG=$(curl -fsSL https://api.github.com/repos/docker/scout-cli/releases/latest | jq -r .tag_name)
       SCOUT_VERSION=${SCOUT_TAG#v}
-      curl -fsSL "https://github.com/docker/scout-cli/releases/download/${SCOUT_TAG}/docker-scout_${SCOUT_VERSION}_linux_amd64.tar.gz" -o /tmp/scout.tgz
-      tar xzf /tmp/scout.tgz -C /usr/local/bin docker-scout
+      curl -fsSL "https://github.com/docker/scout-cli/releases/download/${SCOUT_TAG}/docker-scout_${SCOUT_VERSION}_linux_amd64.tar.gz" | tar xz -C /usr/local/bin docker-scout
       chmod +x /usr/local/bin/docker-scout
-    - docker-scout version
+    - |
+      CRANE_TAG=$(curl -fsSL https://api.github.com/repos/google/go-containerregistry/releases/latest | jq -r .tag_name)
+      curl -fsSL "https://github.com/google/go-containerregistry/releases/download/${CRANE_TAG}/go-containerregistry_Linux_x86_64.tar.gz" | tar xz -C /usr/local/bin crane
+      chmod +x /usr/local/bin/crane
+    - docker-scout version && crane version
     - mkdir -p ~/.docker
     - >
       echo "{\"auths\":{\"${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}"
       > ~/.docker/config.json
   script:
-    - docker-scout cves "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}" --only-severity critical,high --exit-code
+    - crane pull --insecure "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}" /tmp/image.tar
+    - docker-scout cves /tmp/image.tar --only-severity critical,high --exit-code
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
