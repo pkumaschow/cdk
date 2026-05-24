@@ -23,8 +23,13 @@ build-image:
       --destination "${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
       --destination "${REGISTRY_IMAGE}:latest"
       --build-arg "APK_REFRESH=${CI_PIPELINE_ID}"
+      --tar-path "${CI_PROJECT_DIR}/image.tar"
       --insecure
       --skip-tls-verify
+  artifacts:
+    paths:
+      - image.tar
+    expire_in: 1 hour
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
@@ -32,7 +37,8 @@ scout-cves:
   stage: scan
   image: alpine:3.20
   needs:
-    - build-image
+    - job: build-image
+      artifacts: true
   variables:
     DOCKER_SCOUT_HUB_USER: "$DOCKERHUB_USER"
     DOCKER_SCOUT_HUB_PASSWORD: "$DOCKERHUB_PAT"
@@ -43,17 +49,8 @@ scout-cves:
       SCOUT_VERSION=${SCOUT_TAG#v}
       curl -fsSL "https://github.com/docker/scout-cli/releases/download/${SCOUT_TAG}/docker-scout_${SCOUT_VERSION}_linux_amd64.tar.gz" | tar xz -C /usr/local/bin docker-scout
       chmod +x /usr/local/bin/docker-scout
-    - |
-      CRANE_TAG=$(curl -fsSL https://api.github.com/repos/google/go-containerregistry/releases/latest | jq -r .tag_name)
-      curl -fsSL "https://github.com/google/go-containerregistry/releases/download/${CRANE_TAG}/go-containerregistry_Linux_x86_64.tar.gz" | tar xz -C /usr/local/bin crane
-      chmod +x /usr/local/bin/crane
-    - docker-scout version && crane version
-    - mkdir -p ~/.docker
-    - >
-      echo "{\"auths\":{\"${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}"
-      > ~/.docker/config.json
+    - docker-scout version
   script:
-    - crane pull --insecure "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}" /tmp/image.tar
-    - docker-scout cves /tmp/image.tar --only-severity critical,high --exit-code
+    - docker-scout cves "${CI_PROJECT_DIR}/image.tar" --only-severity critical,high --exit-code
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
