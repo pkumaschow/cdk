@@ -1,5 +1,6 @@
 stages:
   - build
+  - test
   - scan
 
 variables:
@@ -26,6 +27,7 @@ build-image:
       --destination "${REGISTRY_IMAGE}:${CDK_VERSION}"
       --destination "${REGISTRY_IMAGE}:latest"
       --build-arg "APK_REFRESH=${CI_PIPELINE_ID}"
+      --build-arg "CDK_VERSION=${CDK_VERSION}"
       --tar-path "${CI_PROJECT_DIR}/image.tar"
       --insecure
       --skip-tls-verify
@@ -33,6 +35,30 @@ build-image:
     paths:
       - image.tar
     expire_in: 1 hour
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+smoke-test:
+  stage: test
+  image: alpine:3.20
+  needs:
+    - job: build-image
+      artifacts: true
+  script:
+    - apk add --no-cache jq
+    - EXPECTED=$(grep -oE 'aws-cdk@[0-9.]+' "${CI_PROJECT_DIR}/Dockerfile" | head -1 | cut -d@ -f2)
+    - 'echo "Expected CDK version: ${EXPECTED}"'
+    - mkdir -p /tmp/extract /tmp/rootfs
+    - tar -xf "${CI_PROJECT_DIR}/image.tar" -C /tmp/extract
+    - jq -r '.[0].Layers[]' /tmp/extract/manifest.json | while read layer; do echo "applying $layer"; tar -xf "/tmp/extract/$layer" -C /tmp/rootfs 2>/dev/null || true; done
+    - test -x /tmp/rootfs/usr/local/bin/cdk
+    - test -x /tmp/rootfs/usr/local/bin/node
+    - echo "running cdk --version inside chroot..."
+    - chroot /tmp/rootfs /usr/local/bin/cdk --version
+    - ACTUAL=$(chroot /tmp/rootfs /usr/local/bin/cdk --version 2>&1 | head -1 | awk '{print $1}')
+    - 'echo "Got CDK version: ${ACTUAL}"'
+    - test "${EXPECTED}" = "${ACTUAL}" || { echo "version mismatch — expected ${EXPECTED} got ${ACTUAL}" >&2; exit 1; }
+    - 'echo "smoke test passed — cdk ${ACTUAL} runs cleanly"'
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
