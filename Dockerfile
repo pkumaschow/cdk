@@ -47,6 +47,15 @@ RUN rm -rf /var/cache/apk/*
 WORKDIR /src
 RUN chown node:node /src
 
+# OCI image labels — placed late so version-only changes don't invalidate
+# the heavy RUN layers above. CDK_VERSION is passed in from CI.
+ARG CDK_VERSION="unknown"
+LABEL org.opencontainers.image.title="cdk" \
+      org.opencontainers.image.description="AWS CDK CLI on node:22-alpine with Python toolchain" \
+      org.opencontainers.image.source="https://github.com/pkumaschow/cdk" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="${CDK_VERSION}"
+
 USER node
 
 ENTRYPOINT ["/usr/local/bin/cdk"]
