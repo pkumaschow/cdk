@@ -1,15 +1,21 @@
 #!/bin/bash
-set -e
+# Local build convenience — exercises the same Dockerfile that GitHub Actions
+# and the GitLab CI pipeline use, without depending on either runner.
+#
+# Usage:
+#   ./ci.sh                       # docker, tag :latest
+#   ./ci.sh podman                # podman, tag :latest
+#   ./ci.sh docker my-cdk:dev     # docker, custom tag
+#   ./ci.sh podman my-cdk:dev     # podman, custom tag
+set -euo pipefail
 
-RUNTIME=docker
-if [ "${1}" = "podman" ]; then
-  RUNTIME=podman
-fi
+RUNTIME="${1:-docker}"
+TAG="${2:-cdk:latest}"
 
-echo "Building cdk alpine ${RUNTIME} image"
+case "$RUNTIME" in
+  docker|podman) ;;
+  *) echo "Unknown runtime '$RUNTIME' — use docker or podman" >&2; exit 2 ;;
+esac
 
-if [ -z ${CI} ]; then
-  ${RUNTIME} build -t cdk:latest .
-else
-  ${RUNTIME} build -t cdk:latest /godata/pipelines/docker-cdk/.
-fi
+echo "Building $TAG with $RUNTIME"
+"$RUNTIME" build -t "$TAG" "$(dirname "$0")"
