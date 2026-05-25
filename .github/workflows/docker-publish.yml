@@ -44,6 +44,7 @@ jobs:
           pull: true
           build-args: |
             APK_REFRESH=${{ github.run_id }}
+            CDK_VERSION=${{ steps.cdk_version.outputs.version }}
           tags: pkumaschow/cdk:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -58,6 +59,7 @@ jobs:
           pull: true
           build-args: |
             APK_REFRESH=${{ github.run_id }}
+            CDK_VERSION=${{ steps.cdk_version.outputs.version }}
           tags: |
             pkumaschow/cdk:latest
             pkumaschow/cdk:${{ steps.cdk_version.outputs.version }}
