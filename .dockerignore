@@ -1,0 +1,29 @@
+# Anything not needed inside the build context — keeps transfer fast and
+# prevents accidental leakage of repo metadata or CI config into the image.
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI
+.github/
+.gitlab-ci.yml
+ci.sh
+
+# Documentation (not needed at build/runtime)
+README.md
+CHANGELOG.md
+LICENSE
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*~
+
+# Local dev artefacts (defence in depth — keeps stray secrets out)
+.env
+.env.*
+*.log
