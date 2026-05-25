@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-05-25] - `pkumaschow/cdk:latest`, `gitlab.homelab.com:5050/peterk/cdk:latest`
+
+### Changed
+- AWS CDK CLI: 2.1115.1 → **2.1124.1**
+- aws-cdk-lib: 2.246.0 → **2.257.0**
+- README refreshed — removed stale Python 3.7.9 claim and orphaned "needs more work" note; added GitLab homelab registry pull instructions and a TypeScript example alongside Python.
+- `ci.sh` repurposed as a local-build convenience (no more GoCD `/godata/pipelines` path).
+
+### CI/CD
+- Added `.gitlab-ci.yml` with a Kaniko-based build that pushes to the homelab GitLab container registry at `gitlab.homelab.com:5050/peterk/cdk` with three tags per build: `:latest`, `:<cdk-version>`, `:<short-sha>`.
+- Added a Docker Scout CVE scan stage to the GitLab pipeline (gates the build on fixable HIGH/CRITICAL findings via `--only-fixed --exit-code`).
+- Pinned all GitHub Actions in `docker-publish.yml` to commit SHAs (`actions/checkout`, `docker/setup-buildx-action`, `docker/login-action`, `docker/build-push-action`, `docker/scout-action`) to harden the supply chain.
+- Added `.dockerignore` — keeps `.git`, CI metadata, README/CHANGELOG/LICENSE and local dotfiles out of the build context.
+
 ## [2026-04-08] - `pkumaschow/cdk:latest`
 
 ### Changed
