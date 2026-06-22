@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-06-22] - `pkumaschow/cdk:latest`, `gitlab.homelab.com:5050/peterk/cdk:latest`
+
+### Security
+- Security refresh — the published image was ~2 months stale and Docker Scout flagged fixable
+  HIGH/MEDIUM CVEs. Local trivy rescan of a fresh rebuild: **40 → 2** fixable HIGH/MEDIUM.
+- Generalised the bundled-dep patch (previously picomatch-only) to also patch **brace-expansion**
+  (CVE-2026-33750, CVE-2026-45149) and **ip-address** (CVE-2026-42338) in place across all nested
+  `node_modules` — verified cleared.
+- OS/apk CVEs (libcrypto3/libssl3, libexpat, musl, nghttp2-libs, libcurl, tar, xz-libs) cleared by
+  `apk upgrade`; `urllib3` pinned ≥2.7.0 (CVE-2026-44431, CVE-2026-44432) — verified cleared.
+- Added an **undici** patch (toward latest 6.x — CVE-2026-12151 DoS, CVE-2026-9679 header
+  injection). undici is bundled inside **npm itself**; the patch computes and asserts 6.27.0 during
+  the build but does **not** persist under local rootless podman (an overlayfs/bundled-dependency
+  quirk). Retained so the CI Kaniko build + Scout can determine whether it clears there. Low
+  runtime risk: npm's HTTP client is not exercised by the `cdk` entrypoint. Tracking an upstream
+  npm bump as the durable fix.
+
 ## [2026-05-25] - `pkumaschow/cdk:latest`, `gitlab.homelab.com:5050/peterk/cdk:latest`
 
 ### Changed

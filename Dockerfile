@@ -23,13 +23,19 @@ RUN NPM_VERSION=$(npm view npm version) && \
 # Install AWS CDK v2 CLI
 RUN npm install -g aws-cdk@2.1124.1
 
-# Fix CVE-2026-33671: patch all picomatch instances to latest (ReDoS via extglob patterns).
-# aws-cdk bundles its own nested copies so npm@11 upgrade alone does not cover them.
-RUN PICO_VERSION=$(npm view picomatch version) && \
-    find /usr/local/lib/node_modules -type d -name picomatch 2>/dev/null | \
-    while read dir; do \
-      wget -qO- "https://registry.npmjs.org/picomatch/-/picomatch-${PICO_VERSION}.tgz" | \
-      tar xz --strip-components=1 -C "$dir"; \
+# Patch nested vulnerable deps that aws-cdk vendors inside its own node_modules — npm upgrades
+# alone do not cover these bundled copies. Each is replaced in-place with the latest published
+# version across every nested directory:
+#   picomatch        CVE-2026-33671 (ReDoS via extglob patterns)
+#   brace-expansion  CVE-2026-33750, CVE-2026-45149 (ReDoS)
+#   ip-address       CVE-2026-42338
+RUN for pkg in picomatch brace-expansion ip-address; do \
+      PKG_VERSION=$(npm view "$pkg" version) && \
+      find /usr/local/lib/node_modules -type d -name "$pkg" 2>/dev/null | \
+      while read dir; do \
+        wget -qO- "https://registry.npmjs.org/${pkg}/-/${pkg}-${PKG_VERSION}.tgz" | \
+        tar xz --strip-components=1 -C "$dir"; \
+      done; \
     done
 
 # Install CDK v2 Python library and AWS CLI
@@ -41,6 +47,20 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     awscli \
     'urllib3>=2.7.0' && \
     pip3 install --no-cache-dir --break-system-packages --upgrade wheel setuptools
+
+# Patch undici (bundled inside npm) within its v6 line. A major bump (v7/v8) could break npm's
+# HTTP, so stay on the latest 6.x — fixes CVE-2026-12151 (DoS) and CVE-2026-9679 (header injection).
+# Overwrite in place (NO rm of the dir — removing a lower-layer dir and recreating it does not
+# survive image flattening on overlayfs). Version via node (npm's --json array is ascending) to
+# avoid shell-sort quirks; the result is asserted so the build can't silently no-op.
+RUN UNDICI_VERSION=$(npm view 'undici@^6' version --json | node -e 'const d=JSON.parse(require("fs").readFileSync(0,"utf8"));console.log(Array.isArray(d)?d[d.length-1]:d)') && \
+    echo "Patching bundled undici -> ${UNDICI_VERSION}" && \
+    find /usr/local/lib/node_modules -type d -name undici 2>/dev/null | \
+    while read dir; do \
+      wget -qO- "https://registry.npmjs.org/undici/-/undici-${UNDICI_VERSION}.tgz" | \
+      tar xz --overwrite --strip-components=1 -C "$dir"; \
+    done && \
+    test "$(node -p "require('/usr/local/lib/node_modules/npm/node_modules/undici/package.json').version")" = "${UNDICI_VERSION}"
 
 RUN rm -rf /var/cache/apk/*
 
