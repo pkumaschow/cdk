@@ -17,6 +17,10 @@
   runtime risk: npm's HTTP client is not exercised by the `cdk` entrypoint. Tracking an upstream
   npm bump as the durable fix.
 
+### Changed
+- AWS CDK CLI: 2.1124.1 → **2.1128.0**
+- aws-cdk-lib: 2.257.0 → **2.260.0**
+
 ## [2026-05-25] - `pkumaschow/cdk:latest`, `gitlab.homelab.com:5050/peterk/cdk:latest`
 
 ### Changed
