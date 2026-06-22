@@ -21,7 +21,7 @@ RUN NPM_VERSION=$(npm view npm version) && \
     mv /tmp/npm-latest /usr/local/lib/node_modules/npm
 
 # Install AWS CDK v2 CLI
-RUN npm install -g aws-cdk@2.1124.1
+RUN npm install -g aws-cdk@2.1128.0
 
 # Patch nested vulnerable deps that aws-cdk vendors inside its own node_modules — npm upgrades
 # alone do not cover these bundled copies. Each is replaced in-place with the latest published
@@ -42,7 +42,7 @@ RUN for pkg in picomatch brace-expansion ip-address; do \
 # wheel and setuptools upgraded explicitly to fix CVE-2026-24049 (path traversal in wheel.cli.unpack)
 # urllib3>=2.7.0 pinned to fix CVE-2026-44431, CVE-2026-44432 (pulled in as awscli dep)
 RUN pip3 install --no-cache-dir --break-system-packages \
-    aws-cdk-lib==2.257.0 \
+    aws-cdk-lib==2.260.0 \
     constructs \
     awscli \
     'urllib3>=2.7.0' && \
