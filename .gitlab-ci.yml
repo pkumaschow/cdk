@@ -31,6 +31,8 @@ build-image:
       --tar-path "${CI_PROJECT_DIR}/image.tar"
       --insecure
       --skip-tls-verify
+      --compressed-caching=false
+      --single-snapshot
   artifacts:
     paths:
       - image.tar
