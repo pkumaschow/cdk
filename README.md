@@ -1,3 +1,5 @@
+![Publish Docker](https://github.com/pkumaschow/cdk/workflows/Publish%20Docker/badge.svg)
+
 # cdk docker image
 
 This Dockerfile builds an Alpine-based image with the AWS CDK command line tool
