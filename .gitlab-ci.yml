@@ -6,6 +6,14 @@ stages:
 variables:
   REGISTRY_IMAGE: "$CI_REGISTRY_IMAGE"
 
+# Pin all cdk jobs to the fedora-desktop runner (podman executor, 46 GB host). cdk jobs are
+# otherwise untagged and can land on the cryptotrader k8s runner whose 8 GB worker nodes
+# OOM-kill the memory-heavy Kaniko snapshot. fedora-desktop has ample memory and has built
+# these images cleanly; this makes the build deterministic rather than runner-roulette.
+default:
+  tags:
+    - fedora-desktop
+
 build-image:
   stage: build
   image:
