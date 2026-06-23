@@ -11,6 +11,13 @@ build-image:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
+  variables:
+    # Kaniko's full-filesystem snapshot of this large image needs real memory. Request enough to
+    # schedule onto a roomy node (not an 8Gi worker) and cap with headroom — previously the pod
+    # had no request and got node-OOM-killed (exit 137) during snapshotting. Honoured because the
+    # k8s runner now sets memory_*_overwrite_max_allowed.
+    KUBERNETES_MEMORY_REQUEST: "4Gi"
+    KUBERNETES_MEMORY_LIMIT: "8Gi"
   before_script:
     - mkdir -p /kaniko/.docker
     - >
