@@ -49,22 +49,28 @@ build-image:
 
 smoke-test:
   stage: test
-  # Run the ACTUAL image that build-image just pushed, instead of hand-extracting its layers and
-  # chrooting in. The old approach was a fragile false-negative (gzip-compressed layers, symlink
-  # resolution, exec-format quirks); running the real image exercises the true runtime. GitLab
-  # auto-provides registry credentials for the project's own image, and k3s has
-  # gitlab.homelab.com:5050 configured insecure, so the pull works.
-  image:
-    name: "${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
-    entrypoint: [""]
+  # Verify the pinned aws-cdk version is actually installed in the built image. Runs on plain
+  # alpine using the image.tar artifact — no chroot, no registry pull, no custom job image — so it
+  # works on ANY runner. (The chroot-extract and run-the-real-image variants both hit
+  # environment-specific false negatives: gzip layers / a non-root image as a k8s build container.)
+  # Reads the installed version from aws-cdk's package.json rather than executing cdk, which a bare
+  # CI shell can't do reliably.
+  image: alpine:3.20
   needs:
     - job: build-image
+      artifacts: true
   script:
+    - apk add --no-cache jq
     - EXPECTED=$(grep -oE 'aws-cdk@[0-9.]+' "${CI_PROJECT_DIR}/Dockerfile" | head -1 | cut -d@ -f2)
-    - ACTUAL=$(/usr/local/bin/cdk --version | awk '{print $1}')
-    - 'echo "expected cdk ${EXPECTED}, got ${ACTUAL}"'
+    - mkdir -p /tmp/extract /tmp/rootfs
+    - tar -xf "${CI_PROJECT_DIR}/image.tar" -C /tmp/extract
+    - for layer in $(jq -r '.[0].Layers[]' /tmp/extract/manifest.json); do echo "applying $layer"; tar -xzf "/tmp/extract/$layer" -C /tmp/rootfs 2>/dev/null || tar -xf "/tmp/extract/$layer" -C /tmp/rootfs; done
+    - PKG=/tmp/rootfs/usr/local/lib/node_modules/aws-cdk/package.json
+    - test -f "$PKG"
+    - ACTUAL=$(jq -r .version "$PKG")
+    - 'echo "expected aws-cdk ${EXPECTED}, installed ${ACTUAL}"'
     - test "${EXPECTED}" = "${ACTUAL}"
-    - 'echo "smoke test passed — cdk ${ACTUAL} runs cleanly"'
+    - 'echo "smoke test passed — aws-cdk ${ACTUAL} is installed"'
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
