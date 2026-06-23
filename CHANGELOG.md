@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-06-23]
+
+### Security
+- Added an accepted-risk exception (OpenVEX, `.vex/cve-2025-60876.openvex.json`) for
+  **CVE-2025-60876** — BusyBox `wget` request-line splitting / header injection (MEDIUM, CVSS 6.5).
+  Status `not_affected` / `vulnerable_code_not_in_execute_path`: the cdk entrypoint never invokes
+  BusyBox `wget`, and the only build-time `wget` use fetches fixed `registry.npmjs.org` URLs. **No
+  fixed busybox exists in any Alpine branch yet** — the Dockerfile's `apk upgrade` will clear it
+  automatically once Alpine ships a patch. The VEX is consumed by the Scout GitHub action via
+  `vex-location`. Remove the statement once a fixed busybox lands.
+
 ## [2026-06-22] - `pkumaschow/cdk:latest`, `gitlab.homelab.com:5050/peterk/cdk:latest`
 
 ### Security
