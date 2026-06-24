@@ -97,3 +97,86 @@ scout-cves:
     - docker-scout cves "archive://${CI_PROJECT_DIR}/image.tar" --only-severity critical,high --only-fixed --exit-code
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+# --- Java image (Dockerfile.java) ---------------------------------------------
+# Separate image variant carrying a JDK + Maven instead of the Python toolchain.
+# Published to the same repo under -java tags (e.g. :latest-java, :<cdk>-java).
+
+build-image-java:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  variables:
+    KUBERNETES_MEMORY_REQUEST: "4Gi"
+    KUBERNETES_MEMORY_LIMIT: "8Gi"
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - >
+      echo "{\"auths\":{\"${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}"
+      > /kaniko/.docker/config.json
+  script:
+    - export CDK_VERSION=$(grep -oE 'aws-cdk@[0-9.]+' "${CI_PROJECT_DIR}/Dockerfile.java" | head -1 | cut -d@ -f2)
+    - echo "Building cdk-java image at CDK version ${CDK_VERSION}"
+    - >
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile.java"
+      --destination "${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}-java"
+      --destination "${REGISTRY_IMAGE}:${CDK_VERSION}-java"
+      --destination "${REGISTRY_IMAGE}:latest-java"
+      --build-arg "APK_REFRESH=${CI_PIPELINE_ID}"
+      --build-arg "CDK_VERSION=${CDK_VERSION}"
+      --tar-path "${CI_PROJECT_DIR}/image-java.tar"
+      --insecure
+      --skip-tls-verify
+      --compressed-caching=false
+      --single-snapshot
+  artifacts:
+    paths:
+      - image-java.tar
+    expire_in: 1 hour
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+smoke-test-java:
+  stage: test
+  # Run the ACTUAL built Java image and execute the real cdk binary (same approach as smoke-test).
+  # The fedora-desktop runner trusts the insecure homelab registry, so it can pull the just-pushed
+  # -java image as this job's image — a true runtime check rather than layer extraction.
+  image:
+    name: "${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}-java"
+    entrypoint: [""]
+  needs:
+    - job: build-image-java
+  script:
+    - EXPECTED=$(grep -oE 'aws-cdk@[0-9.]+' "${CI_PROJECT_DIR}/Dockerfile.java" | head -1 | cut -d@ -f2)
+    - ACTUAL=$(cdk --version | awk '{print $1}')
+    - 'echo "expected cdk ${EXPECTED}, got ${ACTUAL}"'
+    - test "${EXPECTED}" = "${ACTUAL}"
+    - 'echo "smoke test passed — cdk ${ACTUAL} runs cleanly"'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+scout-cves-java:
+  stage: scan
+  image: alpine:3.20
+  needs:
+    - job: build-image-java
+      artifacts: true
+  variables:
+    GIT_STRATEGY: none
+    DOCKER_SCOUT_HUB_USER: "$DOCKERHUB_USER"
+    DOCKER_SCOUT_HUB_PASSWORD: "$DOCKERHUB_PAT"
+  before_script:
+    - apk add --no-cache curl ca-certificates jq
+    - |
+      SCOUT_TAG=$(curl -fsSL https://api.github.com/repos/docker/scout-cli/releases/latest | jq -r .tag_name)
+      SCOUT_VERSION=${SCOUT_TAG#v}
+      curl -fsSL "https://github.com/docker/scout-cli/releases/download/${SCOUT_TAG}/docker-scout_${SCOUT_VERSION}_linux_amd64.tar.gz" | tar xz -C /usr/local/bin docker-scout
+      chmod +x /usr/local/bin/docker-scout
+    - docker-scout version
+  script:
+    - docker-scout cves "archive://${CI_PROJECT_DIR}/image-java.tar" --only-severity critical,high --only-fixed --exit-code
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'

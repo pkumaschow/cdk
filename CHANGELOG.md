@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-06-24] - `pkumaschow/cdk:latest-java`, `gitlab.homelab.com:5050/peterk/cdk:latest-java`
+
+### Added
+- **Java image variant** (`Dockerfile.java`), published under `-java` tags
+  (`:latest-java`, `:<cdk-version>-java`) on both Docker Hub and the homelab GitLab
+  registry. Same `node:22-alpine` base and pinned `aws-cdk@2.1128.0`, but carries
+  **OpenJDK 21 + Maven** instead of the Python toolchain so `cdk init app --language java`,
+  `mvn package`, and `cdk synth` work out of the box. Mirrors the main image's CVE
+  patching (picomatch, brace-expansion, ip-address, undici) and non-root `node` user.
+  Verified locally end-to-end (init java → mvn package → synth → CloudFormation template).
+
+### CI/CD
+- `.gitlab-ci.yml`: added `build-image-java` (Kaniko, `-java` tags, `image-java.tar` artifact),
+  `smoke-test-java` (asserts the pinned aws-cdk version), and `scout-cves-java` (Docker Scout
+  CVE gate) — full parity with the main image's build → test → scan stages.
+- `.github/workflows/docker-publish.yml`: added a `build-java` job that builds `Dockerfile.java`
+  and pushes the `-java` tags to Docker Hub on `main` (compare-on-PR Scout step included).
+- `ci.sh`: accepts an optional Dockerfile argument for local Java builds.
+
 ## [2026-06-22] - `pkumaschow/cdk:latest`, `gitlab.homelab.com:5050/peterk/cdk:latest`
 
 ### Security

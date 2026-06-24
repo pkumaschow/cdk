@@ -91,3 +91,88 @@ jobs:
           image: pkumaschow/cdk:latest
           only-severities: critical,high
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Java image variant (Dockerfile.java) — published under -java tags.
+  build-java:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f  # v3.13.0
+
+      - name: Extract CDK version from Dockerfile.java
+        id: cdk_version
+        run: |
+          echo "version=$(grep -oP 'aws-cdk@\K[0-9.]+' Dockerfile.java)" >> $GITHUB_OUTPUT
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      # PRs: load locally (no attestations — required for Scout local analysis)
+      - name: Build and load (PR)
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6.32.0
+        with:
+          context: .
+          file: Dockerfile.java
+          load: true
+          pull: true
+          build-args: |
+            APK_REFRESH=${{ github.run_id }}
+            CDK_VERSION=${{ steps.cdk_version.outputs.version }}
+          tags: pkumaschow/cdk:latest-java
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # main: push with full supply chain attestations
+      - name: Build and push (main)
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6.32.0
+        with:
+          context: .
+          file: Dockerfile.java
+          push: true
+          pull: true
+          build-args: |
+            APK_REFRESH=${{ github.run_id }}
+            CDK_VERSION=${{ steps.cdk_version.outputs.version }}
+          tags: |
+            pkumaschow/cdk:latest-java
+            pkumaschow/cdk:${{ steps.cdk_version.outputs.version }}-java
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true
+
+      # PRs: compare against production, comment findings on the PR
+      - name: Docker Scout compare
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: docker/scout-action@bacf462e8d090c09660de30a6ccc718035f961e3  # v1.21.0
+        with:
+          command: compare
+          image: pkumaschow/cdk:latest-java
+          to-env: production
+          ignore-unchanged: true
+          only-severities: critical,high
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # main: record CVEs against the production environment after push
+      - name: Docker Scout record
+        if: github.event_name == 'push'
+        continue-on-error: true
+        uses: docker/scout-action@bacf462e8d090c09660de30a6ccc718035f961e3  # v1.21.0
+        with:
+          command: cves
+          image: pkumaschow/cdk:latest-java
+          only-severities: critical,high
+          github-token: ${{ secrets.GITHUB_TOKEN }}

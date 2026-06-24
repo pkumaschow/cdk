@@ -18,14 +18,18 @@ The image is published to two registries on every push to `main`.
 **Docker Hub** (public):
 ```
 docker pull pkumaschow/cdk:latest
-docker pull pkumaschow/cdk:2.1124.1   # any CDK version tag
+docker pull pkumaschow/cdk:2.1128.0        # any CDK version tag
+docker pull pkumaschow/cdk:latest-java     # Java variant (JDK + Maven)
+docker pull pkumaschow/cdk:2.1128.0-java
 ```
 
 **Homelab GitLab registry** (private):
 ```
 docker login gitlab.homelab.com:5050 -u <user>
 docker pull gitlab.homelab.com:5050/peterk/cdk:latest
-docker pull gitlab.homelab.com:5050/peterk/cdk:2.1124.1
+docker pull gitlab.homelab.com:5050/peterk/cdk:2.1128.0
+docker pull gitlab.homelab.com:5050/peterk/cdk:latest-java
+docker pull gitlab.homelab.com:5050/peterk/cdk:2.1128.0-java
 ```
 
 Use Docker Hub for anything outside the homelab; use the GitLab registry to
@@ -75,3 +79,24 @@ cdk init sample-app --language python
 cdk deploy --require-approval never sample-app
 cdk destroy -f sample-app
 ```
+
+## Java image (`-java` tags)
+
+The default image carries Node + Python, which covers TypeScript/JavaScript and
+Python projects. Java CDK apps also need a JDK and Maven, which the default image
+does not include — so a separate variant is published under `-java` tags
+(`:latest-java`, `:<cdk-version>-java`), built from `Dockerfile.java`.
+
+It is the same `node:22-alpine` base and pinned AWS CDK CLI, with **OpenJDK 21**
+and **Maven** in place of the Python toolchain.
+
+```
+mkdir my-java-project && cd my-java-project
+# use the -java image (e.g. set up a `cdk-java` alias, or run directly):
+docker run --rm -u "$(id -u):$(id -g)" \
+  -w "/${PWD##*/}" -v "$(pwd)/:/${PWD##*/}" -v "$HOME/.aws:/home/node/.aws" \
+  pkumaschow/cdk:latest-java init app --language java
+```
+
+`cdk init app --language java` runs `mvn package`, and `cdk synth` compiles the
+app via Maven and emits the CloudFormation template.
