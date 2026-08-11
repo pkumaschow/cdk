@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-08-11] - version bump
+
+### Changed
+- `aws-cdk` CLI 2.1128.0 -> **2.1135.1** (both `Dockerfile` and `Dockerfile.java`)
+- `aws-cdk-lib` (Python) 2.260.0 -> **2.264.0**
+
+Rebuild also refreshes the `node:22-alpine` base and the `apk upgrade` layer, picking up
+Alpine security patches accumulated since the 2026-06-24 build.
+
 ## [2026-06-24] - `pkumaschow/cdk:latest-java`, `gitlab.homelab.com:5050/peterk/cdk:latest-java`
 
 ### Added

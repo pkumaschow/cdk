@@ -24,7 +24,7 @@ RUN NPM_VERSION=$(npm view npm version) && \
     mv /tmp/npm-latest /usr/local/lib/node_modules/npm
 
 # Install AWS CDK v2 CLI
-RUN npm install -g aws-cdk@2.1128.0
+RUN npm install -g aws-cdk@2.1135.1
 
 # Patch nested vulnerable deps that aws-cdk vendors inside its own node_modules — npm upgrades
 # alone do not cover these bundled copies. Each is replaced in-place with the latest published
