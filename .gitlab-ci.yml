@@ -183,17 +183,6 @@ scout-cves-java:
     GIT_STRATEGY: none
     DOCKER_SCOUT_HUB_USER: "$DOCKERHUB_USER"
     DOCKER_SCOUT_HUB_PASSWORD: "$DOCKERHUB_PAT"
-    # Scanning the JDK image makes Scout pull Trivy's Java DB (~970 MB) from ghcr.io, which from
-    # this runner streams at ~1-1.7 MB/s and was dying mid-download (jobs 5073, 5081). Keep Scout's
-    # cache in the project dir so the MinIO runner cache carries it between runs.
-    DOCKER_SCOUT_CACHE_DIR: "$CI_PROJECT_DIR/.scout-cache"
-  cache:
-    key: scout-java-db
-    paths:
-      - .scout-cache/
-    when: always
-  after_script:
-    - du -sh .scout-cache 2>/dev/null || echo "no .scout-cache"
   before_script:
     # Install a PINNED docker-scout. Discovering "latest" via GitHub's unauthenticated API is
     # rate-limited (60/hr/IP); on throttle it yields an empty version, downloads an error page and
