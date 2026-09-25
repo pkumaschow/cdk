@@ -79,6 +79,7 @@ jobs:
           to-env: production
           ignore-unchanged: true
           only-severities: critical,high
+          vex-location: ./.vex
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # main: record CVEs against the production environment after push
@@ -90,6 +91,7 @@ jobs:
           command: cves
           image: pkumaschow/cdk:latest
           only-severities: critical,high
+          vex-location: ./.vex
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   # Java image variant (Dockerfile.java) — published under -java tags.

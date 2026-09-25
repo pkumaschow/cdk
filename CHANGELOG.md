@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-09-25] - version bump
+
+### Changed
+- `aws-cdk` CLI 2.1135.1 -> **2.1143.0** (both `Dockerfile` and `Dockerfile.java`)
+- `aws-cdk-lib` (Python) 2.264.0 -> **2.270.0**
+
+The 2026-08-11 bump below was never merged or published, so this is the first release since
+2026-06-24. Rebuild refreshes the `node:22-alpine` base and `apk upgrade` layer.
+
+## [2026-08-11] - version bump
+
+### Changed
+- `aws-cdk` CLI 2.1128.0 -> **2.1135.1** (both `Dockerfile` and `Dockerfile.java`)
+- `aws-cdk-lib` (Python) 2.260.0 -> **2.264.0**
+
+Rebuild also refreshes the `node:22-alpine` base and the `apk upgrade` layer, picking up
+Alpine security patches accumulated since the 2026-06-24 build.
+
 ## [2026-06-24] - `pkumaschow/cdk:latest-java`, `gitlab.homelab.com:5050/peterk/cdk:latest-java`
 
 ### Added
@@ -18,6 +36,17 @@
 - `.github/workflows/docker-publish.yml`: added a `build-java` job that builds `Dockerfile.java`
   and pushes the `-java` tags to Docker Hub on `main` (compare-on-PR Scout step included).
 - `ci.sh`: accepts an optional Dockerfile argument for local Java builds.
+
+## [2026-06-23]
+
+### Security
+- Added an accepted-risk exception (OpenVEX, `.vex/cve-2025-60876.openvex.json`) for
+  **CVE-2025-60876** — BusyBox `wget` request-line splitting / header injection (MEDIUM, CVSS 6.5).
+  Status `not_affected` / `vulnerable_code_not_in_execute_path`: the cdk entrypoint never invokes
+  BusyBox `wget`, and the only build-time `wget` use fetches fixed `registry.npmjs.org` URLs. **No
+  fixed busybox exists in any Alpine branch yet** — the Dockerfile's `apk upgrade` will clear it
+  automatically once Alpine ships a patch. The VEX is consumed by the Scout GitHub action via
+  `vex-location`. Remove the statement once a fixed busybox lands.
 
 ## [2026-06-22] - `pkumaschow/cdk:latest`, `gitlab.homelab.com:5050/peterk/cdk:latest`
 
