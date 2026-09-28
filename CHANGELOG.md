@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-28] - version bump
+
+### Changed
+- `aws-cdk-lib` (Python) 2.270.0 -> **2.271.0** (flagged by the scheduled `check-upgrades` job)
+
 ## [2026-09-25] - version bump
 
 ### Changed

@@ -42,7 +42,7 @@ RUN for pkg in picomatch brace-expansion ip-address; do \
 # wheel and setuptools upgraded explicitly to fix CVE-2026-24049 (path traversal in wheel.cli.unpack)
 # urllib3>=2.7.0 pinned to fix CVE-2026-44431, CVE-2026-44432 (pulled in as awscli dep)
 RUN pip3 install --no-cache-dir --break-system-packages \
-    aws-cdk-lib==2.270.0 \
+    aws-cdk-lib==2.271.0 \
     constructs \
     awscli \
     'urllib3>=2.7.0' && \
