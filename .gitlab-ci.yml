@@ -1,3 +1,9 @@
+# Shared homelab templates: .trivy-fs / .trivy-image (homelab CI standard — Trivy in every pipeline).
+include:
+  - project: peterk/ci-templates
+    file: /templates/homelab-ci.yml
+    ref: main
+
 stages:
   - build
   - test
@@ -192,6 +198,44 @@ scout-cves-java:
     - docker-scout version
   script:
     - docker-scout cves "archive://${CI_PROJECT_DIR}/image-java.tar" --only-severity critical,high --only-fixed --exit-code
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# --- Trivy (second opinion alongside Scout) -----------------------------------
+# Both gate on fixable HIGH/CRITICAL. The dependency scan runs on every branch; the image scans
+# pull the just-pushed SHA tags from the registry, so they follow the main-only builds.
+
+trivy-deps:
+  extends: .trivy-fs
+  stage: scan
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+
+trivy-image:
+  extends: .trivy-image
+  stage: scan
+  needs:
+    - job: build-image
+      artifacts: false
+  variables:
+    TRIVY_IMAGE_REF: "${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+trivy-image-java:
+  extends: .trivy-image
+  stage: scan
+  needs:
+    - job: build-image-java
+      artifacts: false
+  variables:
+    TRIVY_IMAGE_REF: "${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}-java"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never

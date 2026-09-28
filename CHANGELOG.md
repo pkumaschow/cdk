@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-28] - Trivy scans
+
+### Added
+- GitLab CI Trivy jobs from the shared `peterk/ci-templates` include, gating on fixable HIGH/CRITICAL
+  alongside Scout: `trivy-deps` (`trivy fs`, every branch), `trivy-image` and `trivy-image-java`
+  (the pushed SHA tags, `main` only).
+
 ## [2026-09-28] - synth smoke test
 
 ### Changed
