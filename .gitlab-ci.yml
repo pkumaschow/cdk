@@ -69,11 +69,8 @@ smoke-test:
   needs:
     - job: build-image
   script:
-    - EXPECTED=$(grep -oE 'aws-cdk@[0-9.]+' "${CI_PROJECT_DIR}/Dockerfile" | head -1 | cut -d@ -f2)
-    - ACTUAL=$(cdk --version | awk '{print $1}')
-    - 'echo "expected cdk ${EXPECTED}, got ${ACTUAL}"'
-    - test "${EXPECTED}" = "${ACTUAL}"
-    - 'echo "smoke test passed — cdk ${ACTUAL} runs cleanly"'
+    # Version pins + a real `cdk synth` of smoke/python (S3 bucket + SQS queue) — see the script.
+    - sh scripts/smoke-synth.sh python
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
@@ -163,11 +160,8 @@ smoke-test-java:
   needs:
     - job: build-image-java
   script:
-    - EXPECTED=$(grep -oE 'aws-cdk@[0-9.]+' "${CI_PROJECT_DIR}/Dockerfile.java" | head -1 | cut -d@ -f2)
-    - ACTUAL=$(cdk --version | awk '{print $1}')
-    - 'echo "expected cdk ${EXPECTED}, got ${ACTUAL}"'
-    - test "${EXPECTED}" = "${ACTUAL}"
-    - 'echo "smoke test passed — cdk ${ACTUAL} runs cleanly"'
+    # Version pin + a real `cdk synth` of smoke/java via Maven (pulls aws-cdk-lib from Maven Central).
+    - sh scripts/smoke-synth.sh java
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-28] - synth smoke test
+
+### Changed
+- CI `smoke-test` / `smoke-test-java` now run `scripts/smoke-synth.sh`: besides the CLI version pin
+  (and the `aws-cdk-lib` pin in the Python image), each does a real `cdk synth` of a minimal app under
+  `smoke/` (S3 bucket + SQS queue) and asserts both resources are in the template. The Java variant
+  builds via Maven against the same `aws-cdk-lib` version the Python image pins.
+
 ## [2026-09-28] - version bump
 
 ### Changed
