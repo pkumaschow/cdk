@@ -236,6 +236,15 @@ trivy-image-java:
       artifacts: false
   variables:
     TRIVY_IMAGE_REF: "${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}-java"
+    # A cold Java DB pull from mirror.gcr.io took ~8 min here on top of the main DB (~3 min),
+    # blowing Trivy's default 10m timeout. Give it room, and save the cache even on failure so a
+    # completed download is never thrown away (it's only fetched again after its 3-day TTL).
+    TRIVY_TIMEOUT: "30m"
+  cache:
+    key: trivy-cache
+    paths:
+      - .trivycache/
+    when: always
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
