@@ -207,9 +207,54 @@ scout-cves-java:
 # Both gate on fixable HIGH/CRITICAL. The dependency scan runs on every branch; the image scans
 # pull the just-pushed SHA tags from the registry, so they follow the main-only builds.
 
+# Trivy resolves smoke/java/pom.xml transitively; without a local Maven repo it fetches every pom
+# from Maven Central on each run and gets 429-blocked (homelab egress IP, Retry-After ~30 min).
+# maven-deps fills a project-local repo cached on the pom; offline first, so a warm cache makes
+# no network calls. Dependency plugin pinned so Maven never checks plugin metadata.
+maven-deps:
+  stage: test
+  image: maven:3-eclipse-temurin-21-alpine
+  variables:
+    MVN_RESOLVE: >-
+      mvn -B -q -f smoke/java/pom.xml -Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository
+      org.apache.maven.plugins:maven-dependency-plugin:3.11.0:resolve
+  script:
+    - $MVN_RESOLVE -o || $MVN_RESOLVE
+  cache:
+    key:
+      prefix: maven
+      files:
+        - smoke/java/pom.xml
+    paths:
+      - .m2/repository/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+
 trivy-deps:
   extends: .trivy-fs
   stage: scan
+  needs:
+    - job: maven-deps
+      artifacts: false
+  variables:
+    # Trivy looks for $HOME/.m2/repository before going remote (a cold cache still falls back to
+    # Maven Central, so a miss can 429 but never pass silently). Don't scan the repo's own jars.
+    HOME: "${CI_PROJECT_DIR}"
+    TRIVY_SKIP_DIRS: "${CI_PROJECT_DIR}/.m2"
+  cache:
+    - key: trivy-cache
+      paths:
+        - .trivycache/
+      when: always
+    - key:
+        prefix: maven
+        files:
+          - smoke/java/pom.xml
+      paths:
+        - .m2/repository/
+      policy: pull
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
