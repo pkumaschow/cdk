@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-10-05] - version bump
+
+### Changed
+- `aws-cdk` CLI 2.1143.0 -> **2.1144.0** (both `Dockerfile` and `Dockerfile.java`)
+- `aws-cdk-lib` (Python) 2.271.0 -> **2.272.0**, and the Java smoke `pom.xml` default to match
+  (flagged by the scheduled `check-upgrades` job, peterk/work#42)
+
+### Security
+- Java smoke `pom.xml` pins jackson-core / -databind / -datatype-jsr310 to **2.22.3** over the 2.22.2
+  that `jsii-runtime` 1.140.0 brings in (CVE-2026-89407, -89425, -91776, -91777; failed `trivy-deps`).
+  Smoke app only, not shipped in either image. Remove once `aws-cdk-lib` moves to `jsii-runtime` >= 1.141.0.
+
 ## [2026-09-28] - Trivy scans
 
 ### Added
