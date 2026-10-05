@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-10-05] - Maven cache for trivy-deps
+
+### Changed
+- New `maven-deps` CI job resolves `smoke/java/pom.xml` into a project-local `.m2/repository`,
+  cached on the pom (offline first, dependency plugin pinned). `trivy-deps` pulls that cache and
+  points Trivy at it, so a warm cache makes no requests to Maven Central, which had been
+  429-blocking the scan (peterk/work#43). A cold cache still falls back to Maven Central.
+
 ## [2026-10-05] - version bump
 
 ### Changed
