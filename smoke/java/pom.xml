@@ -12,31 +12,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
         <!-- scripts/smoke-synth.sh overrides this with the aws-cdk-lib pin from Dockerfile -->
-        <cdk.lib.version>2.272.0</cdk.lib.version>
-        <!-- Overrides jackson 2.22.2 from jsii-runtime 1.140.0 (CVE-2026-89407/89425/91776/91777).
-             Drop once aws-cdk-lib depends on jsii-runtime >= 1.141.0, which pins 2.22.3 itself. -->
-        <jackson.version>2.22.3</jackson.version>
+        <cdk.lib.version>2.273.0</cdk.lib.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
