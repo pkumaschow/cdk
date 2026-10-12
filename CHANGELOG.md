@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-10-12] - version bump
+
+### Changed
+- `aws-cdk` CLI 2.1144.0 -> **2.1145.0** (both `Dockerfile` and `Dockerfile.java`)
+- `aws-cdk-lib` (Python) 2.272.0 -> **2.273.0**, and the Java smoke `pom.xml` default to match
+  (flagged by the scheduled `check-upgrades` job, peterk/work#44)
+
+### Removed
+- Java smoke `pom.xml` jackson 2.22.3 override. `aws-cdk-lib` 2.273.0 depends on `jsii-runtime`
+  1.141.0, which pins jackson 2.22.3 itself.
+
 ## [2026-10-05] - Maven cache for trivy-deps
 
 ### Changed
