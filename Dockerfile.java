@@ -24,7 +24,7 @@ RUN NPM_VERSION=$(npm view npm version) && \
     mv /tmp/npm-latest /usr/local/lib/node_modules/npm
 
 # Install AWS CDK v2 CLI
-RUN npm install -g aws-cdk@2.1145.0
+RUN npm install -g aws-cdk@2.1146.1
 
 # Patch nested vulnerable deps that aws-cdk vendors inside its own node_modules — npm upgrades
 # alone do not cover these bundled copies. Each is replaced in-place with the latest published
@@ -37,21 +37,23 @@ RUN for pkg in picomatch brace-expansion ip-address; do \
       find /usr/local/lib/node_modules -type d -name "$pkg" 2>/dev/null | \
       while read dir; do \
         wget -qO- "https://registry.npmjs.org/${pkg}/-/${pkg}-${PKG_VERSION}.tgz" | \
-        tar xz --strip-components=1 -C "$dir"; \
+        tar xzm --strip-components=1 -C "$dir"; \
       done; \
     done
 
 # Patch undici (bundled inside npm) within its v6 line. A major bump (v7/v8) could break npm's
 # HTTP, so stay on the latest 6.x — fixes CVE-2026-12151 (DoS) and CVE-2026-9679 (header injection).
 # Overwrite in place (NO rm of the dir — removing a lower-layer dir and recreating it does not
-# survive image flattening on overlayfs). Version via node (npm's --json array is ascending) to
+# survive image flattening on overlayfs). `tar -m` stamps extracted files with the current time:
+# npm tarballs fix every mtime to 1985, so a same-size file (6.29.0 -> 6.29.1 package.json) looks
+# unchanged to podman's layer diff and the patch is silently dropped. Version via node (npm's --json array is ascending) to
 # avoid shell-sort quirks; the result is asserted so the build can't silently no-op.
 RUN UNDICI_VERSION=$(npm view 'undici@^6' version --json | node -e 'const d=JSON.parse(require("fs").readFileSync(0,"utf8"));console.log(Array.isArray(d)?d[d.length-1]:d)') && \
     echo "Patching bundled undici -> ${UNDICI_VERSION}" && \
     find /usr/local/lib/node_modules -type d -name undici 2>/dev/null | \
     while read dir; do \
       wget -qO- "https://registry.npmjs.org/undici/-/undici-${UNDICI_VERSION}.tgz" | \
-      tar xz --overwrite --strip-components=1 -C "$dir"; \
+      tar xzm --overwrite --strip-components=1 -C "$dir"; \
     done && \
     test "$(node -p "require('/usr/local/lib/node_modules/npm/node_modules/undici/package.json').version")" = "${UNDICI_VERSION}"
 

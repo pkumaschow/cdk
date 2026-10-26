@@ -12,7 +12,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
         <!-- scripts/smoke-synth.sh overrides this with the aws-cdk-lib pin from Dockerfile -->
-        <cdk.lib.version>2.273.0</cdk.lib.version>
+        <cdk.lib.version>2.274.0</cdk.lib.version>
     </properties>
 
     <dependencies>
