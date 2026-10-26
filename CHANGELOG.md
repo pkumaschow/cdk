@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-10-26] - version bump
+
+### Changed
+- `aws-cdk` CLI 2.1145.0 -> **2.1146.1** (both `Dockerfile` and `Dockerfile.java`)
+- `aws-cdk-lib` (Python) 2.273.0 -> **2.274.0**, and the Java smoke `pom.xml` default to match
+
+### Fixed
+- Bundled-dep patch loops extract with `tar -m`. npm tarballs pin every mtime to 1985, so a
+  same-size file (undici 6.29.0 -> 6.29.1 `package.json`) looked unchanged to podman's layer diff
+  and local builds silently kept 6.29.0 (CVE-2026-109869) despite the in-step assert passing.
+
 ## [2026-10-12] - version bump
 
 ### Changed
