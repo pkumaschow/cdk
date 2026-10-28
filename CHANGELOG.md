@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-28] - security
+
+### Security
+- Java image: maven's bundled `guava` 33.6.0-jre -> **33.7.2-jre** (CVE-2026-102554, HIGH; fixed
+  33.7.2). Alpine v3.24 ships maven 3.9.16 with the old jar, so the build swaps it in maven's
+  `lib/` for the latest `-jre` release, checks the jar against Maven Central's sha1, and asserts
+  maven still starts with only the new jar present.
+- python3 CVE-2026-115557 cleared by rebuild: Alpine v3.24 backported 3.14.10-r1 (peterk/work#50).
+
 ## [2026-10-26] - version bump
 
 ### Changed
