@@ -100,7 +100,7 @@ scout-cves:
     - apk add --no-cache curl ca-certificates tar
     - |
       set -eu
-      SCOUT_VERSION=1.24.0
+      SCOUT_VERSION=1.28.0
       curl -fsSL "https://github.com/docker/scout-cli/releases/download/v${SCOUT_VERSION}/docker-scout_${SCOUT_VERSION}_linux_amd64.tar.gz" -o /tmp/docker-scout.tgz
       tar xzf /tmp/docker-scout.tgz -C /usr/local/bin docker-scout
       chmod +x /usr/local/bin/docker-scout
@@ -191,7 +191,7 @@ scout-cves-java:
     - apk add --no-cache curl ca-certificates tar
     - |
       set -eu
-      SCOUT_VERSION=1.24.0
+      SCOUT_VERSION=1.28.0
       curl -fsSL "https://github.com/docker/scout-cli/releases/download/v${SCOUT_VERSION}/docker-scout_${SCOUT_VERSION}_linux_amd64.tar.gz" -o /tmp/docker-scout.tgz
       tar xzf /tmp/docker-scout.tgz -C /usr/local/bin docker-scout
       chmod +x /usr/local/bin/docker-scout

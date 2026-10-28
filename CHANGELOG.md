@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-10-28] - ci
+
+### CI/CD
+- `docker-scout` pin 1.24.0 -> **1.28.0** in `scout-cves` and `scout-cves-java`.
+
 ## [2026-10-28] - security
 
 ### Security
