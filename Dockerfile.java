@@ -11,7 +11,21 @@ RUN apk upgrade --no-cache
 #   openjdk21 — JDK for compiling/running Java CDK apps
 #   maven     — Java build tool invoked by `cdk synth`/`cdk deploy`
 #   git       — required by `cdk init`
-RUN apk add --no-cache openjdk21 maven git
+#
+# Alpine's maven bundles guava in its lib/ dir; swap it for the latest -jre release
+# (CVE-2026-102554, fixed 33.7.2). The jar is checked against Maven Central's sha1, and
+# maven must still start on the new jar with no other guava left beside it.
+RUN apk add --no-cache openjdk21 maven git && \
+    MVN_LIB=/usr/share/java/maven-3/lib && \
+    M2=https://repo1.maven.org/maven2/com/google/guava/guava && \
+    GUAVA_VERSION=$(wget -qO- "$M2/maven-metadata.xml" | grep -o '<version>[^<]*-jre</version>' | sed 's/<[^>]*>//g' | sort -V | tail -1) && \
+    echo "Patching maven's bundled guava -> ${GUAVA_VERSION}" && \
+    wget -qO /tmp/guava.jar "$M2/${GUAVA_VERSION}/guava-${GUAVA_VERSION}.jar" && \
+    echo "$(wget -qO- "$M2/${GUAVA_VERSION}/guava-${GUAVA_VERSION}.jar.sha1")  /tmp/guava.jar" | sha1sum -c - && \
+    rm -f "$MVN_LIB"/guava-*.jar && \
+    mv /tmp/guava.jar "$MVN_LIB/guava-${GUAVA_VERSION}.jar" && \
+    test "$(ls "$MVN_LIB"/guava-*.jar)" = "$MVN_LIB/guava-${GUAVA_VERSION}.jar" && \
+    mvn -v >/dev/null
 
 # Update npm to latest by extracting tarball directly — npm publishes with all bundled deps included,
 # so no npm install step is needed. This avoids the npm@10→npm@11 self-upgrade circular failure on Alpine.
