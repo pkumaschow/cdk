@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-11-10] - security rebuild
+
+### Security
+- Rebuild only, no Dockerfile change. Alpine v3.24 now ships `zlib` 1.4-r0 (CVE-2026-4738,
+  CRITICAL, was 1.3.2-r1) and `libexpat` 2.10.0-r0 (CVE-2026-115506, -118370, -117610,
+  -113351, HIGH, was 2.9.0-r0); `apk upgrade` picks both up.
+- Not fixed: `musl` 1.2.6-r3 CVE-2026-107891 (no newer build in v3.24), `sqlite` CVE-2026-119586
+  (no fix). MEDIUM, left for now: npm's bundled `glob` 13.0.6 / `minimatch` 10.2.5 (fixes are
+  major bumps) and `pip` 26.1.2 CVE-2026-13346.
+
 ## [2026-10-28] - ci
 
 ### CI/CD
