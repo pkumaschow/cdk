@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-11-10] - musl from edge
+
+### Security
+- Both images: `musl` + `musl-utils` 1.2.6-r3 -> **1.2.6-r6** from Alpine edge (CVE-2026-107891, HIGH,
+  the last Scout HIGH). v3.24 has no fixed build yet; the build asserts >= r6. Remove once v3.24
+  ships it.
+
 ## [2026-11-10] - security rebuild
 
 ### Security

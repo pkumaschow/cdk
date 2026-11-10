@@ -7,6 +7,12 @@ ARG APK_REFRESH=daily
 # Upgrade all OS packages to pick up latest security patches (fixes OpenSSL CVEs)
 RUN apk upgrade --no-cache
 
+# musl CVE-2026-107891 (HIGH) is fixed in 1.2.6-r6, which only edge has; v3.24 is stuck on r3.
+# Take musl + musl-utils (no deps) from edge alone, and assert the version so it can't no-op.
+# Drop this once v3.24 ships >= 1.2.6-r6.
+RUN apk upgrade --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main musl musl-utils && \
+    test "$(apk version -t "$(apk info -e -v musl | sed 's/^musl-//')" 1.2.6-r6)" != "<"
+
 # Install Python 3, pip, and git
 RUN apk add --no-cache python3 py3-pip git
 
